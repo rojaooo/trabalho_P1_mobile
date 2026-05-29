@@ -66,6 +66,17 @@ class _YugiohPageState extends State<YugiohPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.search, color: Colors.amber),
+          onPressed: () {
+            setState(() {
+              _isSearchVisible = !_isSearchVisible;
+              if (!_isSearchVisible) {
+                FocusScope.of(context).unfocus(); // Esconde o teclado se fechar a barra
+              }
+            });
+          },
+        ),
         title: const Text(
           'Yu-Gi-Oh! Carta Aleatória',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -74,15 +85,9 @@ class _YugiohPageState extends State<YugiohPage> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.amber),
-            onPressed: () {
-              setState(() {
-                _isSearchVisible = !_isSearchVisible;
-                if (!_isSearchVisible) {
-                  FocusScope.of(context).unfocus(); // Esconde o teclado se fechar a barra
-                }
-              });
-            },
+            icon: const Icon(Icons.refresh, color: Colors.amber),
+            onPressed: _fetchRandomCard,
+            tooltip: 'Outra Carta',
           ),
         ],
       ),
@@ -186,14 +191,20 @@ class _YugiohPageState extends State<YugiohPage> {
                           final exchangeRate = card['usd_to_brl'] ?? 5.0;
                           final avgPriceBrl = avgPrice * exchangeRate;
 
-                          return SingleChildScrollView(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Só exibe a contagem se a busca retornar mais de 1 resultado
-                                  if (cards.length > 1)
+                          return LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        // Só exibe a contagem se a busca retornar mais de 1 resultado
+                                        if (cards.length > 1)
                                     Text(
                                       "Resultado ${index + 1} de ${cards.length} (Deslize 👉)",
                                       style: const TextStyle(
@@ -240,6 +251,9 @@ class _YugiohPageState extends State<YugiohPage> {
                                 ],
                               ),
                             ),
+                                ),
+                              );
+                            },
                           );
                         },
                       );
@@ -256,16 +270,6 @@ class _YugiohPageState extends State<YugiohPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _fetchRandomCard,
-        backgroundColor: Colors.amber,
-        icon: const Icon(Icons.refresh, color: Colors.black),
-        label: const Text(
-          "Outra Carta",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
